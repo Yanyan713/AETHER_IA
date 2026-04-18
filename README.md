@@ -3,6 +3,10 @@
 > Cliquez sur "Plus d'informations" puis "Exécuter quand même" pour continuer.
 > Ce programme est sûr et open-source.
 
+# LANGUE
+L'IA NE COMPREND QUE LE FRANCAIS
+l'anglais ne sera pas compri
+
 # uniquement pour windows
 Une intelligence artificielle légère et portable en langage C, conçue pour répondre de manière pertinente à des questions en se basant sur une base de données de phrases (stockée dans `memoire.txt`).
 
@@ -67,4 +71,4 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.```
+SOFTWARE.
