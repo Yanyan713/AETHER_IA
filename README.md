@@ -1,4 +1,8 @@
 # AETHER IA
+> # ⚠️ Note : Windows Defender peut afficher une alerte lors du premier lancement.
+> Cliquez sur "Plus d'informations" puis "Exécuter quand même" pour continuer.
+> Ce programme est sûr et open-source.
+
 # uniquement pour windows
 Une intelligence artificielle légère et portable en langage C, conçue pour répondre de manière pertinente à des questions en se basant sur une base de données de phrases (stockée dans `memoire.txt`).
 
