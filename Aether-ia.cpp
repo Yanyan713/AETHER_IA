@@ -1,0 +1,178 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define TAILLE_PHRASE    1024
+#define MAX_LIGNE        2048
+#define FICHIER_MEMOIRE  "memoire.txt"
+
+char** base_donnees = NULL;
+int nombre_phrases = 0;
+
+const char* mots_vides[] = {
+    "tu", "je", "il", "elle", "on", "nous", "vous",
+    "peux", "peut", "pouvez", "des", "les", "une", "un",
+    "est", "suis", "es", "et", "ou", "pas", "quoi", "comment",
+    "qui", "o¨´", "pourquoi", "quand", "avec", "sans", "dans", NULL
+};
+
+int est_mot_vide(const char* mot) {
+    for (int i = 0; mots_vides[i] != NULL; i++) {
+        if (strcmp(mot, mots_vides[i]) == 0) return 1;
+    }
+    return 0;
+}
+
+void sauvegarder() {
+    FILE* f = fopen(FICHIER_MEMOIRE, "w");
+    if (!f) return;
+    for (int i = 0; i < nombre_phrases; i++) {
+        fprintf(f, "%s\n", base_donnees[i]);
+    }
+    fclose(f);
+}
+
+void charger_memoire() {
+    FILE* f = fopen(FICHIER_MEMOIRE, "r");
+    if (!f) return;
+
+    char ligne[TAILLE_PHRASE];
+    while (fgets(ligne, TAILLE_PHRASE, f)) {
+        ligne[strcspn(ligne, "\n")] = 0;
+        if (strlen(ligne) < 2) continue;
+
+        base_donnees = (char**)realloc(base_donnees, (nombre_phrases + 1) * sizeof(char*));
+        base_donnees[nombre_phrases] = (char*)malloc(strlen(ligne) + 1);
+        strcpy(base_donnees[nombre_phrases], ligne);
+        nombre_phrases++;
+    }
+    fclose(f);
+}
+
+void apprendre_texte(const char* texte) {
+    char nettoye[MAX_LIGNE];
+    strncpy(nettoye, texte, MAX_LIGNE - 1);
+    nettoye[MAX_LIGNE - 1] = 0;
+
+    char* debut = nettoye;
+    while (*debut == ' ') debut++;
+    if (strlen(debut) < 2) return;
+
+    base_donnees = (char**)realloc(base_donnees, (nombre_phrases + 1) * sizeof(char*));
+    base_donnees[nombre_phrases] = (char*)malloc(strlen(debut) + 1);
+    strcpy(base_donnees[nombre_phrases], debut);
+    nombre_phrases++;
+
+    sauvegarder();
+    printf("[?] Appris | Total: %d\n", nombre_phrases);
+}
+
+int mot_exact(const char* phrase, const char* mot) {
+    char p[TAILLE_PHRASE], m[64];
+    strncpy(p, phrase, TAILLE_PHRASE - 1);
+    strncpy(m, mot, 60);
+    p[TAILLE_PHRASE-1] = 0;
+    m[60] = 0;
+
+    for (int i = 0; p[i]; i++) p[i] = tolower(p[i]);
+    for (int i = 0; m[i]; i++) m[i] = tolower(m[i]);
+
+    char* pos = strstr(p, m);
+    if (!pos) return 0;
+    if (pos > p && isalnum(pos[-1])) return 0;
+    if (pos[strlen(m)] != 0 && isalnum(pos[strlen(m)])) return 0;
+    return 1;
+}
+
+int calculer_score(const char* phrase, const char* question) {
+    char q[MAX_LIGNE];
+    strncpy(q, question, MAX_LIGNE - 1);
+    q[MAX_LIGNE - 1] = 0;
+
+    int score = 0;
+    char* mot = strtok(q, " ,;:.!?()[]{}'\"");
+
+    while (mot) {
+        char mot_min[64];
+        strncpy(mot_min, mot, 60);
+        mot_min[60] = 0;
+        for (int i = 0; mot_min[i]; i++) mot_min[i] = tolower(mot_min[i]);
+
+        if (!est_mot_vide(mot_min) && mot_exact(phrase, mot_min)) {
+            score += 60;
+        }
+        mot = strtok(NULL, " ,;:.!?()[]{}'\"");
+    }
+    if (strlen(phrase) < 80) score += 10;
+    return score;
+}
+
+void repondre(const char* question) {
+    if (strstr(question, "html") || strstr(question, "HTML")) {
+        printf("[??] Je suis en langage C, pas en HTML.\n");
+        return;
+    }
+
+    char q_min[MAX_LIGNE];
+    strncpy(q_min, question, MAX_LIGNE - 1);
+    for (int i = 0; q_min[i]; i++) q_min[i] = tolower(q_min[i]);
+
+    if (strstr(q_min, "intelligence") && strstr(q_min, "artificielle")) {
+        printf("[??] Oui, je suis une IA.\n");
+        return;
+    }
+
+    int meilleur = -1;
+    int meilleur_score = 0;
+
+    for (int i = 0; i < nombre_phrases; i++) {
+        int s = calculer_score(base_donnees[i], question);
+        if (s > meilleur_score) {
+            meilleur_score = s;
+            meilleur = i;
+        }
+    }
+
+    if (meilleur != -1 && meilleur_score > 0) {
+        printf("[??] %s\n", base_donnees[meilleur]);
+    } else {
+        printf("[??] Je ne sais pas.\n");
+    }
+}
+
+void afficher_aide() {
+    printf("\n=== COMMANDES ===\n");
+    printf(" \\help    ¡ú afficher cette aide\n");
+    printf(" \\texte   ¡ú apprendre une phrase\n");
+    printf(" quit     ¡ú quitter\n");
+    printf("=================\n\n");
+}
+
+int main() {
+    charger_memoire();
+    system("cls");
+    printf("==== AETHER IA ====\n");
+    printf("Phrases: %d\n\n", nombre_phrases);
+
+    char entree[MAX_LIGNE];
+    while (1) {
+        printf("> ");
+        if (!fgets(entree, MAX_LIGNE, stdin)) break;
+        entree[strcspn(entree, "\n")] = 0;
+
+        if (strlen(entree) == 0) continue;
+        if (!strcmp(entree, "quit")) break;
+        if (!strcmp(entree, "\\help")) { afficher_aide(); continue; }
+        if (entree[0] == '\\') { apprendre_texte(entree + 1); continue; }
+
+        repondre(entree);
+    }
+
+    for (int i = 0; i < nombre_phrases; i++) {
+        free(base_donnees[i]);
+    }
+    free(base_donnees);
+
+    return 0;
+}
